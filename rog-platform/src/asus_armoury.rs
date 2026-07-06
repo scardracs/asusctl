@@ -60,38 +60,29 @@ fn is_intel_cpu() -> bool {
 }
 
 fn write_intel_rapl_limit(constraint_idx: u32, watts: i32) {
-    let microwatts = (watts as u64) * 1_000_000;
-    let microwatts_str = microwatts.to_string();
-
-    fn walk_dir(dir: &Path, constraint_idx: u32, val_str: &str) {
-        if let Ok(entries) = read_dir(dir) {
-            for entry in entries.flatten() {
-                let path = entry.path();
-                if path.is_dir() {
-                    walk_dir(&path, constraint_idx, val_str);
-                } else if path.is_file() {
-                    if let Some(file_name) = path.file_name() {
-                        let expected_name = format!("constraint_{}_power_limit_uw", constraint_idx);
-                        if file_name == expected_name.as_str() {
-                            let path_str = path.to_string_lossy();
-                            if path_str.contains("intel-rapl") {
-                                debug!("Writing {} to {}", val_str, path_str);
-                                if let Ok(mut file) = OpenOptions::new().write(true).open(&path) {
-                                    let _ = file.write_all(val_str.as_bytes());
-                                }
-                            }
-                        }
-                    }
-                }
+    let microwatts_str = ((watts as u64) * 1_000_000).to_string();
+    let file_name = format!("constraint_{}_power_limit_uw", constraint_idx);
+    let Ok(entries) = read_dir("/sys/class/powercap") else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let zone = entry.file_name();
+        let zone = zone.to_string_lossy();
+        // A package zone name has exactly one ':' ("intel-rapl:0"). Sub-zones have two ("intel-rapl:0:0").
+        let is_package_zone = (zone.starts_with("intel-rapl:")
+            || zone.starts_with("intel-rapl-mmio:"))
+            && zone.matches(':').count() == 1;
+        if !is_package_zone {
+            continue;
+        }
+        let path = entry.path().join(&file_name);
+        if path.exists() {
+            debug!("Writing {microwatts_str} to {}", path.display());
+            if let Ok(mut file) = OpenOptions::new().write(true).open(&path) {
+                let _ = file.write_all(microwatts_str.as_bytes());
             }
         }
     }
-
-    walk_dir(
-        Path::new("/sys/class/powercap"),
-        constraint_idx,
-        &microwatts_str,
-    );
 }
 
 fn sync_all_intel_rapl_limits() {
