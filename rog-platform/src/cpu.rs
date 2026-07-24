@@ -388,20 +388,20 @@ mod tests {
 
     #[test]
     #[ignore = "Can't run this in a docker image"]
-    fn check_cpu() {
-        let cpu = CPUControl::new().unwrap();
-        assert_eq!(cpu.get_governor().unwrap(), CPUGovernor::Powersave);
+    fn check_cpu() -> std::result::Result<(), Box<dyn std::error::Error>> {
+        let cpu = CPUControl::new()?;
+        assert_eq!(cpu.get_governor()?, CPUGovernor::Powersave);
         assert_eq!(
-            cpu.get_available_governors().unwrap(),
+            cpu.get_available_governors()?,
             vec![
                 CPUGovernor::Performance,
                 CPUGovernor::Powersave
             ]
         );
 
-        assert_eq!(cpu.get_epp().unwrap(), CPUEPP::BalancePower);
+        assert_eq!(cpu.get_epp()?, CPUEPP::BalancePower);
         assert_eq!(
-            cpu.get_available_epp().unwrap(),
+            cpu.get_available_epp()?,
             vec![
                 CPUEPP::Default,
                 CPUEPP::Performance,
@@ -410,5 +410,6 @@ mod tests {
                 CPUEPP::Power,
             ]
         );
+        Ok(())
     }
 }

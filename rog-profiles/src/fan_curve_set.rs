@@ -183,10 +183,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn curve_data_from_str_to_str() {
+    fn curve_data_from_str_to_str() -> Result<(), Box<dyn std::error::Error>> {
         let mut curve =
-            CurveData::from_str("30c:1%,49c:2%,59c:3%,69c:4%,79c:31%,89c:49%,99c:56%,109c:58%")
-                .unwrap();
+            CurveData::from_str("30c:1%,49c:2%,59c:3%,69c:4%,79c:31%,89c:49%,99c:56%,109c:58%")?;
         curve.enabled = true;
         assert_eq!(curve.fan, FanCurvePU::CPU);
         assert_eq!(curve.temp, [30, 49, 59, 69, 79, 89, 99, 109]);
@@ -202,14 +201,16 @@ mod tests {
         let curve = CurveData::from_str("30c:1%,49c:2%,59c:3%,69c:4%,79c:31%,89c:49%,99c:56%");
 
         assert!(curve.is_err());
+        Ok(())
     }
 
     #[test]
-    fn curve_data_from_str_simple() {
-        let curve = CurveData::from_str("30:1,49:2,59:3,69:4,79:31,89:49,99:56,109:58").unwrap();
+    fn curve_data_from_str_simple() -> Result<(), Box<dyn std::error::Error>> {
+        let curve = CurveData::from_str("30:1,49:2,59:3,69:4,79:31,89:49,99:56,109:58")?;
         assert_eq!(curve.fan, FanCurvePU::CPU);
         assert_eq!(curve.temp, [30, 49, 59, 69, 79, 89, 99, 109]);
         assert_eq!(curve.pwm, [1, 2, 3, 4, 31, 49, 56, 58]);
+        Ok(())
     }
 
     #[test]

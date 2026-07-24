@@ -231,13 +231,13 @@ mod tests {
     }
 
     #[test]
-    fn check_data_file_parse() {
+    fn check_data_file_parse() -> Result<(), Box<dyn std::error::Error>> {
         let mut data = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         data.push("data/aura_support.ron");
 
-        let buf = std::fs::read_to_string(&data).unwrap();
+        let buf = std::fs::read_to_string(&data)?;
 
-        let tmp = ron::from_str::<LedSupportFile>(&buf).unwrap();
+        let tmp = ron::from_str::<LedSupportFile>(&buf)?;
 
         // Ensure the data is sorted
         let mut tmp_sort = tmp.clone();
@@ -247,15 +247,13 @@ mod tests {
             model.basic_modes.sort_by_key(|a| *a as u8);
         }
         if tmp != tmp_sort {
-            let sorted =
-                ron::ser::to_string_pretty(&tmp_sort, PrettyConfig::new().depth_limit(2)).unwrap();
+            let sorted = ron::ser::to_string_pretty(&tmp_sort, PrettyConfig::new().depth_limit(2))?;
             let mut file = OpenOptions::new()
                 .write(true)
                 .create(true)
                 .truncate(true)
-                .open(&data)
-                .unwrap();
-            file.write_all(sorted.as_bytes()).unwrap();
+                .open(&data)?;
+            file.write_all(sorted.as_bytes())?;
             panic!(
                 "aura_support.ron not sorted, should be {sorted}. File rewritten with correct \
                  order, run test again"
@@ -263,20 +261,18 @@ mod tests {
         }
 
         let my_config = PrettyConfig::new().depth_limit(2);
-        println!(
-            "RON: {}",
-            ron::ser::to_string_pretty(&tmp, my_config).unwrap()
-        );
+        println!("RON: {}", ron::ser::to_string_pretty(&tmp, my_config)?);
+        Ok(())
     }
 
     #[test]
-    fn find_data_file_groups() {
+    fn find_data_file_groups() -> Result<(), Box<dyn std::error::Error>> {
         let mut data = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         data.push("data/aura_support.ron");
 
-        let buf = std::fs::read_to_string(&data).unwrap();
+        let buf = std::fs::read_to_string(&data)?;
 
-        let tmp = ron::from_str::<LedSupportFile>(&buf).unwrap();
+        let tmp = ron::from_str::<LedSupportFile>(&buf)?;
 
         let mut modes: HashMap<Vec<AuraModeNum>, Vec<String>> = HashMap::new();
 
@@ -288,6 +284,7 @@ mod tests {
             }
         }
         dbg!(modes);
+        Ok(())
 
         // let my_config = PrettyConfig::new().depth_limit(2);
         // println!(
