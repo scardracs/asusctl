@@ -17,21 +17,21 @@ pub enum Error {
     #[error("IO Error: {1}: {0}")]
     IoPath(String, #[source] std::io::Error),
 
-    #[error("RON Parse Error: {0}")]
-    Ron(#[source] ron::Error),
+    #[error("TOML Parse Error: {0}")]
+    TomlDe(#[source] toml::de::Error),
 
-    #[error("RON Parse Error: {0}")]
-    RonParse(#[source] ron::error::SpannedError),
+    #[error("TOML Serialize Error: {0}")]
+    TomlSer(#[source] toml::ser::Error),
 }
 
-impl From<ron::Error> for Error {
-    fn from(e: ron::Error) -> Self {
-        Self::Ron(e)
+impl From<toml::de::Error> for Error {
+    fn from(e: toml::de::Error) -> Self {
+        Self::TomlDe(e)
     }
 }
 
-impl From<ron::error::SpannedError> for Error {
-    fn from(e: ron::error::SpannedError) -> Self {
-        Self::RonParse(e)
+impl From<toml::ser::Error> for Error {
+    fn from(e: toml::ser::Error) -> Self {
+        Self::TomlSer(e)
     }
 }
