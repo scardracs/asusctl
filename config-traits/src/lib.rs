@@ -3,17 +3,16 @@
 //! updating them from previous versions where fields or names are changed in
 //! some way.
 //!
-//! The end canonical file format is `.ron` as this supports rust types well
+//! The end canonical file format is `.toml`
 
 use std::fs::{self, create_dir, File, OpenOptions};
 use std::io::{Read, Write};
 use std::path::PathBuf;
 
 use log::{error, warn};
-pub use ron;
-use ron::ser::PrettyConfig;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
+pub use toml;
 
 /// Config file helper traits. Only `new()` and `file_name()` are required to be
 /// implemented, the rest are intended to be free methods.
@@ -24,7 +23,7 @@ where
     /// Taking over the standard `new()` to ensure things can be generic
     fn new() -> Self;
 
-    /// Return the config files names, such as `wibble.cfg`
+    /// Return the config files names, such as `wibble.toml`
     fn file_name(&self) -> String;
 
     /// Return the full path to the directory the config file resides in
@@ -40,8 +39,27 @@ where
         config.push(self.file_name());
         let mut do_rename = !config.exists();
         let mut cfg_old = config.clone();
-        // Migrating all configs to .ron format, so we do need to check for older ones
+        // Migrating all configs to .toml format, so we do need to check for older ones
         if do_rename {
+            warn!("Config {cfg_old:?} does not exist, looking for .ron next");
+            cfg_old.pop();
+            let tmp = self.file_name();
+            let parts: Vec<_> = tmp.split('.').collect();
+            cfg_old.push(format!("{}.ron", parts[0]));
+        }
+        if do_rename && cfg_old.exists() {
+            // Now we gotta rename it
+            warn!("Renaming {cfg_old:?} to {config:?}");
+            std::fs::rename(&cfg_old, &config).unwrap_or_else(|err| {
+                error!(
+                    "Could not rename. Please remove {} then restart service: Error {}",
+                    self.file_name(),
+                    err
+                );
+            });
+            do_rename = false;
+        }
+        if do_rename && !cfg_old.exists() {
             warn!("Config {cfg_old:?} does not exist, looking for .cfg next");
             cfg_old.pop();
             let tmp = self.file_name();
@@ -94,12 +112,12 @@ where
             .unwrap_or_else(|e| panic!("Could not open {:?} {e}", self.file_path()))
     }
 
-    /// Open and parse the config file to self from ron format
+    /// Open and parse the config file to self from toml format
     fn read(&mut self) {
         if let Ok(data) = fs::read_to_string(self.file_path()) {
             if data.is_empty() {
                 warn!("File is empty {:?}", self.file_path());
-            } else if let Ok(data) = ron::from_str(&data) {
+            } else if let Ok(data) = toml::from_str(&data) {
                 *self = data;
             } else {
                 warn!("Could not deserialise {:?}", self.file_path());
@@ -107,12 +125,12 @@ where
         }
     }
 
-    /// Open and parse the config file to self from ron format
+    /// Open and parse the config file to self from toml format
     fn read_new(&self) -> Option<Self> {
         if let Ok(data) = fs::read_to_string(self.file_path()) {
             if data.is_empty() {
                 warn!("File is empty {:?}", self.file_path());
-            } else if let Ok(data) = ron::from_str(&data) {
+            } else if let Ok(data) = toml::from_str(&data) {
                 return Some(data);
             } else {
                 warn!("Could not deserialise {:?}", self.file_path());
@@ -121,7 +139,7 @@ where
         None
     }
 
-    /// Write the config file data to pretty ron format
+    /// Write the config file data to pretty toml format
     fn write(&self) {
         let mut file = match File::create(self.file_path()) {
             Ok(data) => data,
@@ -133,14 +151,14 @@ where
                 return;
             }
         };
-        let ron = match ron::ser::to_string_pretty(&self, PrettyConfig::new().depth_limit(4)) {
+        let toml_str = match toml::to_string_pretty(&self) {
             Ok(data) => data,
             Err(e) => {
-                error!("Parse {:?} to RON failed, error: {e}", self.file_path());
+                error!("Parse {:?} to TOML failed, error: {e}", self.file_path());
                 return;
             }
         };
-        file.write_all(ron.as_bytes())
+        file.write_all(toml_str.as_bytes())
             .unwrap_or_else(|err| error!("Could not write config: {}", err));
     }
 
@@ -211,12 +229,12 @@ macro_rules! std_config_load {
                 let mut buf = String::new();
                 if let Ok(read_len) = file.read_to_string(&mut buf) {
                     if read_len != 0 {
-                        if let Ok(data) = ron::from_str(&buf) {
+                        if let Ok(data) = toml::from_str(&buf) {
                             self = data;
-                            log::info!("Parsed RON for {:?}", std::any::type_name::<Self>());
-                        }  $(else if let Ok(data) = ron::from_str::<$generic>(&buf) {
+                            log::info!("Parsed TOML for {:?}", std::any::type_name::<Self>());
+                        }  $(else if let Ok(data) = toml::from_str::<$generic>(&buf) {
                             self = data.into();
-                            log::info!("New version failed, trying previous: Parsed RON for {:?}", std::any::type_name::<$generic>());
+                            log::info!("New version failed, trying previous: Parsed TOML for {:?}", std::any::type_name::<$generic>());
                         })* else {
                             self.rename_file_old();
                             self = Self::new();
