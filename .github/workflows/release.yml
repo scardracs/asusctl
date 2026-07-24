@@ -29,7 +29,7 @@ jobs:
 
             - name: Install makedepends
               run: |
-                  pacman -Syu --noconfirm rust llvm clang at-spi2-core cairo gtk3
+                  pacman -Syu --noconfirm rust llvm clang mold at-spi2-core cairo gtk3
 
             - name: Determine pkgrel
               env:
