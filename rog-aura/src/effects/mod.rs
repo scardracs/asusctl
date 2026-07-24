@@ -227,8 +227,7 @@ mod tests {
             Speed::Med,
         )));
 
-        let s =
-            ron::ser::to_string_pretty(&seq, ron::ser::PrettyConfig::new().depth_limit(4)).unwrap();
+        let s = toml::to_string_pretty(&seq).unwrap();
         println!("{s}");
 
         seq.next_state(&layout);

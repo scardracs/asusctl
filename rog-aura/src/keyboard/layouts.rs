@@ -198,7 +198,7 @@ impl KeyLayout {
                 std::io::ErrorKind::InvalidData.into(),
             ))
         } else {
-            let mut data = ron::from_str::<Self>(&buf)?;
+            let mut data = toml::from_str::<Self>(&buf)?;
 
             let mut unused = HashSet::new();
             for k in data.key_shapes.keys() {
@@ -286,7 +286,7 @@ impl KeyLayout {
         } else {
             led_data.layout_name
         };
-        let layout_file = format!("{layout_name}_US.ron");
+        let layout_file = format!("{layout_name}_US.toml");
         data_path.push("layouts");
         data_path.push(layout_file);
         let path = data_path.as_path();
@@ -478,7 +478,7 @@ mod tests {
         {
             let mut buf = std::fs::read_to_string(p.unwrap().path()).unwrap();
 
-            let data: KeyLayout = ron::from_str(&buf).unwrap();
+            let data: KeyLayout = toml::from_str(&buf).unwrap();
 
             let mut unused = HashSet::new();
             for k in data.key_shapes.keys() {
@@ -502,18 +502,6 @@ mod tests {
             );
             buf.clear();
         }
-
-        // println!(
-        //     "RON: {}",
-        //     ron::ser::to_string_pretty(&tmp,
-        // PrettyConfig::new().depth_limit(4)).unwrap() );
-
-        // let mut data = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        // data.push("data/aura-support2.json");
-
-        // let mut file =
-        // OpenOptions::new().write(true).create(true).truncate(true).open(&
-        // data).unwrap(); file.write_all(json.as_bytes()).unwrap();
     }
 
     #[test]
@@ -521,10 +509,10 @@ mod tests {
         const DATA_DIR: &str = env!("CARGO_MANIFEST_DIR");
         let mut data_path = PathBuf::from(DATA_DIR);
         data_path.push("data");
-        data_path.push("aura_support.ron");
+        data_path.push("aura_support.toml");
 
         let mut buf = std::fs::read_to_string(&data_path).unwrap();
-        let data: LedSupportFile = ron::from_str(&buf).unwrap();
+        let data: LedSupportFile = toml::from_str(&buf).unwrap();
 
         data_path.pop();
         data_path.push("layouts");
@@ -537,7 +525,7 @@ mod tests {
 
             buf.clear();
 
-            let layout_file = format!("{}_US.ron", config.layout_name);
+            let layout_file = format!("{}_US.toml", config.layout_name);
             data_path.pop();
             data_path.push(&layout_file);
 
@@ -558,7 +546,7 @@ mod tests {
                     config.device_name
                 )
             }
-            if let Err(e) = ron::from_str::<KeyLayout>(&buf) {
+            if let Err(e) = toml::from_str::<KeyLayout>(&buf) {
                 panic!("Error checking {data_path:?} : {e:?}")
             }
         }

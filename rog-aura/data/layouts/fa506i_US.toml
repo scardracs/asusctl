@@ -1,0 +1,623 @@
+locale = "US"
+
+[key_shapes.lshift.Led]
+width = 2.5
+height = 1.0
+pad_left = 0.10000000149011612
+pad_right = 0.10000000149011612
+pad_top = 0.10000000149011612
+pad_bottom = 0.10000000149011612
+
+[key_shapes.lctrl.Led]
+width = 1.399999976158142
+height = 1.2999999523162842
+pad_left = 0.10000000149011612
+pad_right = 0.10000000149011612
+pad_top = 0.10000000149011612
+pad_bottom = 0.10000000149011612
+
+[key_shapes.capsplonk.Led]
+width = 1.899999976158142
+height = 1.0
+pad_left = 0.10000000149011612
+pad_right = 0.10000000149011612
+pad_top = 0.10000000149011612
+pad_bottom = 0.10000000149011612
+
+[key_shapes.tab.Led]
+width = 1.600000023841858
+height = 1.0
+pad_left = 0.10000000149011612
+pad_right = 0.10000000149011612
+pad_top = 0.10000000149011612
+pad_bottom = 0.10000000149011612
+
+[key_shapes.up_arrow.Led]
+width = 0.800000011920929
+height = 0.800000011920929
+pad_left = 1.899999976158142
+pad_right = 1.399999976158142
+pad_top = 0.10000000149011612
+pad_bottom = 0.0
+
+[key_shapes.rctrl.Led]
+width = 1.2000000476837158
+height = 1.2999999523162842
+pad_left = 0.10000000149011612
+pad_right = 0.10000000149011612
+pad_top = 0.10000000149011612
+pad_bottom = 0.10000000149011612
+
+[key_shapes.numpad_tall.Led]
+width = 1.0
+height = 2.200000047683716
+pad_left = 0.10000000149011612
+pad_right = 0.10000000149011612
+pad_top = 0.10000000149011612
+pad_bottom = -1.2000000476837158
+
+[key_shapes.arrows.Led]
+width = 0.800000011920929
+height = 0.800000011920929
+pad_left = 0.10000000149011612
+pad_right = 0.10000000149011612
+pad_top = -0.4000000059604645
+pad_bottom = 0.10000000149011612
+
+[key_shapes.regular2.Led]
+width = 1.0
+height = 1.2999999523162842
+pad_left = 0.10000000149011612
+pad_right = 0.10000000149011612
+pad_top = 0.10000000149011612
+pad_bottom = 0.10000000149011612
+
+[key_shapes.regular.Led]
+width = 1.0
+height = 1.0
+pad_left = 0.10000000149011612
+pad_right = 0.10000000149011612
+pad_top = 0.10000000149011612
+pad_bottom = 0.10000000149011612
+
+[key_shapes.rshift.Led]
+width = 2.9000000953674316
+height = 1.0
+pad_left = 0.10000000149011612
+pad_right = 0.10000000149011612
+pad_top = 0.10000000149011612
+pad_bottom = 0.10000000149011612
+
+[key_shapes.func_space.Blank]
+width = 0.5
+height = 0.0
+
+[key_shapes.esc_func_spacing.Blank]
+width = 1.2000000476837158
+height = 0.0
+
+[key_shapes.bkslash.Led]
+width = 1.399999976158142
+height = 1.0
+pad_left = 0.10000000149011612
+pad_right = 0.10000000149011612
+pad_top = 0.10000000149011612
+pad_bottom = 0.10000000149011612
+
+[key_shapes.func_key.Led]
+width = 1.0
+height = 0.699999988079071
+pad_left = 0.10000000149011612
+pad_right = 0.10000000149011612
+pad_top = 0.0
+pad_bottom = 0.10000000149011612
+
+[key_shapes.spacebar.Led]
+width = 5.699999809265137
+height = 1.2999999523162842
+pad_left = 0.10000000149011612
+pad_right = 0.10000000149011612
+pad_top = 0.10000000149011612
+pad_bottom = 0.10000000149011612
+
+[key_shapes.arrows_spacer.Blank]
+width = 14.5
+height = 0.0
+
+[key_shapes.numpad_wide.Led]
+width = 2.200000047683716
+height = 1.0
+pad_left = 0.10000000149011612
+pad_right = 0.10000000149011612
+pad_top = 0.10000000149011612
+pad_bottom = 0.10000000149011612
+
+[key_shapes.backspace.Led]
+width = 2.0
+height = 1.0
+pad_left = 0.10000000149011612
+pad_right = 0.10000000149011612
+pad_top = 0.10000000149011612
+pad_bottom = 0.10000000149011612
+
+[key_shapes.return.Led]
+width = 2.299999952316284
+height = 1.0
+pad_left = 0.10000000149011612
+pad_right = 0.10000000149011612
+pad_top = 0.10000000149011612
+pad_bottom = 0.10000000149011612
+
+[[key_rows]]
+pad_left = 0.10000000149011612
+pad_top = 0.10000000149011612
+row = [
+    [
+    "Esc",
+    "func_key",
+],
+    [
+    "Spacing",
+    "esc_func_spacing",
+],
+    [
+    "F1",
+    "func_key",
+],
+    [
+    "F2",
+    "func_key",
+],
+    [
+    "F3",
+    "func_key",
+],
+    [
+    "F4",
+    "func_key",
+],
+    [
+    "Spacing",
+    "func_space",
+],
+    [
+    "F5",
+    "func_key",
+],
+    [
+    "F6",
+    "func_key",
+],
+    [
+    "F7",
+    "func_key",
+],
+    [
+    "F8",
+    "func_key",
+],
+    [
+    "Spacing",
+    "func_space",
+],
+    [
+    "F9",
+    "func_key",
+],
+    [
+    "F10",
+    "func_key",
+],
+    [
+    "F11",
+    "func_key",
+],
+    [
+    "F12",
+    "func_key",
+],
+    [
+    "Spacing",
+    "func_space",
+],
+    [
+    "Del",
+    "func_key",
+],
+    [
+    "NumPadPause",
+    "func_key",
+],
+    [
+    "NumPadPrtSc",
+    "func_key",
+],
+    [
+    "NumPadHome",
+    "func_key",
+],
+]
+
+[[key_rows]]
+pad_left = 0.10000000149011612
+pad_top = 0.10000000149011612
+row = [
+    [
+    "Tilde",
+    "regular",
+],
+    [
+    "N1",
+    "regular",
+],
+    [
+    "N2",
+    "regular",
+],
+    [
+    "N3",
+    "regular",
+],
+    [
+    "N4",
+    "regular",
+],
+    [
+    "N5",
+    "regular",
+],
+    [
+    "N6",
+    "regular",
+],
+    [
+    "N7",
+    "regular",
+],
+    [
+    "N8",
+    "regular",
+],
+    [
+    "N9",
+    "regular",
+],
+    [
+    "N0",
+    "regular",
+],
+    [
+    "Hyphen",
+    "regular",
+],
+    [
+    "Equals",
+    "regular",
+],
+    [
+    "Backspace",
+    "backspace",
+],
+    [
+    "Spacing",
+    "func_space",
+],
+    [
+    "NumLock",
+    "regular",
+],
+    [
+    "FwdSlash",
+    "regular",
+],
+    [
+    "Star",
+    "regular",
+],
+    [
+    "Hyphen",
+    "regular",
+],
+]
+
+[[key_rows]]
+pad_left = 0.10000000149011612
+pad_top = 0.10000000149011612
+row = [
+    [
+    "Tab",
+    "tab",
+],
+    [
+    "Q",
+    "regular",
+],
+    [
+    "W",
+    "regular",
+],
+    [
+    "E",
+    "regular",
+],
+    [
+    "R",
+    "regular",
+],
+    [
+    "T",
+    "regular",
+],
+    [
+    "Y",
+    "regular",
+],
+    [
+    "U",
+    "regular",
+],
+    [
+    "I",
+    "regular",
+],
+    [
+    "O",
+    "regular",
+],
+    [
+    "P",
+    "regular",
+],
+    [
+    "LBracket",
+    "regular",
+],
+    [
+    "RBracket",
+    "regular",
+],
+    [
+    "BackSlash",
+    "bkslash",
+],
+    [
+    "Spacing",
+    "func_space",
+],
+    [
+    "N7",
+    "regular",
+],
+    [
+    "N8",
+    "regular",
+],
+    [
+    "N9",
+    "regular",
+],
+    [
+    "NumPadPlus",
+    "numpad_tall",
+],
+]
+
+[[key_rows]]
+pad_left = 0.10000000149011612
+pad_top = 0.10000000149011612
+row = [
+    [
+    "Caps",
+    "capsplonk",
+],
+    [
+    "A",
+    "regular",
+],
+    [
+    "S",
+    "regular",
+],
+    [
+    "D",
+    "regular",
+],
+    [
+    "F",
+    "regular",
+],
+    [
+    "G",
+    "regular",
+],
+    [
+    "H",
+    "regular",
+],
+    [
+    "J",
+    "regular",
+],
+    [
+    "K",
+    "regular",
+],
+    [
+    "L",
+    "regular",
+],
+    [
+    "SemiColon",
+    "regular",
+],
+    [
+    "Quote",
+    "regular",
+],
+    [
+    "Return",
+    "return",
+],
+    [
+    "Spacing",
+    "func_space",
+],
+    [
+    "N4",
+    "regular",
+],
+    [
+    "N5",
+    "regular",
+],
+    [
+    "N6",
+    "regular",
+],
+]
+
+[[key_rows]]
+pad_left = 0.10000000149011612
+pad_top = 0.10000000149011612
+row = [
+    [
+    "LShift",
+    "lshift",
+],
+    [
+    "Z",
+    "regular",
+],
+    [
+    "X",
+    "regular",
+],
+    [
+    "C",
+    "regular",
+],
+    [
+    "V",
+    "regular",
+],
+    [
+    "B",
+    "regular",
+],
+    [
+    "N",
+    "regular",
+],
+    [
+    "M",
+    "regular",
+],
+    [
+    "Comma",
+    "regular",
+],
+    [
+    "Period",
+    "regular",
+],
+    [
+    "FwdSlash",
+    "regular",
+],
+    [
+    "Rshift",
+    "rshift",
+],
+    [
+    "Spacing",
+    "func_space",
+],
+    [
+    "N1",
+    "regular",
+],
+    [
+    "N2",
+    "regular",
+],
+    [
+    "N3",
+    "regular",
+],
+    [
+    "NumPadEnter",
+    "numpad_tall",
+],
+]
+
+[[key_rows]]
+pad_left = 0.10000000149011612
+pad_top = 0.10000000149011612
+row = [
+    [
+    "LCtrl",
+    "lctrl",
+],
+    [
+    "LFn",
+    "regular2",
+],
+    [
+    "Meta",
+    "regular2",
+],
+    [
+    "LAlt",
+    "regular2",
+],
+    [
+    "Spacebar",
+    "spacebar",
+],
+    [
+    "RAlt",
+    "regular2",
+],
+    [
+    "RCtrl",
+    "rctrl",
+],
+    [
+    "Up",
+    "up_arrow",
+],
+    [
+    "Spacing",
+    "func_space",
+],
+    [
+    "N0",
+    "numpad_wide",
+],
+    [
+    "NumPadDel",
+    "regular",
+],
+]
+
+[[key_rows]]
+pad_left = 0.10000000149011612
+pad_top = 0.10000000149011612
+row = [
+    [
+    "Spacing",
+    "arrows_spacer",
+],
+    [
+    "Left",
+    "arrows",
+],
+    [
+    "Down",
+    "arrows",
+],
+    [
+    "Right",
+    "arrows",
+],
+]

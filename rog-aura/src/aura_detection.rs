@@ -7,8 +7,8 @@ use serde::{Deserialize, Serialize};
 use crate::keyboard::AdvancedAuraType;
 use crate::{AuraModeNum, AuraZone, PowerZones};
 
-pub const ASUS_LED_MODE_CONF: &str = "/usr/share/asusd/aura_support.ron";
-pub const ASUS_LED_MODE_USER_CONF: &str = "/etc/asusd/asusd_user_ledmodes.ron";
+pub const ASUS_LED_MODE_CONF: &str = "/usr/share/asusd/aura_support.toml";
+pub const ASUS_LED_MODE_USER_CONF: &str = "/etc/asusd/asusd_user_ledmodes.toml";
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize, Serialize)]
 pub struct LedSupportData {
@@ -80,17 +80,20 @@ impl LedSupportData {
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, Deserialize, Serialize)]
-pub struct LedSupportFile(Vec<LedSupportData>);
+pub struct LedSupportFile {
+    #[serde(default)]
+    pub device: Vec<LedSupportData>,
+}
 
 impl LedSupportFile {
     pub fn get(&self) -> &[LedSupportData] {
-        &self.0
+        &self.device
     }
 
     /// The list is stored in ordered format, so the iterator must be reversed
     /// to ensure we match to *whole names* first before doing a glob match
     fn match_device(&self, device_name: &str, product_id: &str) -> LedSupportData {
-        for config in self.0.iter().rev() {
+        for config in self.device.iter().rev() {
             if device_name.contains(&config.device_name) {
                 info!("Matched to {}", config.device_name);
                 if !config.product_id.is_empty() {
@@ -106,7 +109,7 @@ impl LedSupportFile {
             }
         }
         warn!(
-            "the aura_support.ron file has no entry for this model: {device_name}, {product_id}. \
+            "the aura_support.toml file has no entry for this model: {device_name}, {product_id}. \
              Using a default"
         );
         LedSupportData {
@@ -120,9 +123,9 @@ impl LedSupportFile {
         }
     }
 
-    /// Load `LedSupportFile` from the `aura_support.ron` file at
-    /// `/usr/share/asusd/aura_support.ron` and append with data from
-    /// `/etc/asusd/asusd_user_ledmodes.ron` if that file is available.
+    /// Load `LedSupportFile` from the `aura_support.toml` file at
+    /// `/usr/share/asusd/aura_support.toml` and append with data from
+    /// `/etc/asusd/asusd_user_ledmodes.toml` if that file is available.
     ///
     /// Returns `None` if neither file exists or does not parse correctly.
     pub fn load_from_support_db() -> Option<Self> {
@@ -133,8 +136,8 @@ impl LedSupportFile {
             if file.is_empty() {
                 warn!("{} is empty", ASUS_LED_MODE_USER_CONF);
             } else {
-                if let Ok(mut tmp) = ron::from_str::<LedSupportFile>(&file) {
-                    data.0.append(&mut tmp.0);
+                if let Ok(mut tmp) = toml::from_str::<LedSupportFile>(&file) {
+                    data.device.append(&mut tmp.device);
                 }
                 info!(
                     "Loaded user-defined LED support data from {}",
@@ -147,10 +150,10 @@ impl LedSupportFile {
             if file.is_empty() {
                 warn!("{} is empty", ASUS_LED_MODE_CONF);
             } else {
-                let mut tmp: LedSupportFile = ron::from_str(&file)
+                let mut tmp: LedSupportFile = toml::from_str(&file)
                     .map_err(|e| error!("{e}"))
                     .unwrap_or_else(|_| panic!("Could not deserialise {}", ASUS_LED_MODE_CONF));
-                data.0.append(&mut tmp.0);
+                data.device.append(&mut tmp.device);
                 loaded = true;
                 info!(
                     "Loaded default LED support data from {}",
@@ -158,7 +161,8 @@ impl LedSupportFile {
                 );
             }
         }
-        data.0.sort_by(|a, b| a.device_name.cmp(&b.device_name));
+        data.device
+            .sort_by(|a, b| a.device_name.cmp(&b.device_name));
 
         if loaded {
             return Some(data);
@@ -166,16 +170,17 @@ impl LedSupportFile {
 
         // If the system-wide files were not found (typical in CI or
         // development environments), attempt to load the bundled
-        // `data/aura_support.ron` from the crate so tests and local runs
+        // `data/aura_support.toml` from the crate so tests and local runs
         // behave the same as when the package is installed.
-        // Attempt to load a bundled `aura_support.ron` included at compile time.
+        // Attempt to load a bundled `aura_support.toml` included at compile time.
         // Using `include_str!` ensures the data is available regardless of
         // runtime `CARGO_MANIFEST_DIR` or CI environment differences.
-        let bundled_buf = include_str!("../data/aura_support.ron");
+        let bundled_buf = include_str!("../data/aura_support.toml");
         if !bundled_buf.is_empty() {
-            if let Ok(tmp) = ron::from_str::<LedSupportFile>(bundled_buf) {
-                data.0.append(&mut tmp.0.clone());
-                data.0.sort_by(|a, b| a.device_name.cmp(&b.device_name));
+            if let Ok(tmp) = toml::from_str::<LedSupportFile>(bundled_buf) {
+                data.device.append(&mut tmp.device.clone());
+                data.device
+                    .sort_by(|a, b| a.device_name.cmp(&b.device_name));
                 info!("Loaded bundled LED support data (embedded)");
                 return Some(data);
             } else {
@@ -195,12 +200,9 @@ mod tests {
     use std::io::Write;
     use std::path::PathBuf;
 
-    use ron::ser::PrettyConfig;
-
     use super::LedSupportData;
     use crate::aura_detection::{LedSupportFile, PowerZones};
     use crate::keyboard::{AdvancedAuraType, LedCode};
-    // use crate::zoned::Zone;
     use crate::{AuraModeNum, AuraZone};
 
     #[test]
@@ -222,29 +224,31 @@ mod tests {
             ],
         };
 
-        assert!(ron::to_string(&led).is_ok());
-        // assert_eq!(json, String::new());
+        assert!(toml::to_string(&led).is_ok());
     }
 
     #[test]
     fn check_data_file_parse() {
         let mut data = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        data.push("data/aura_support.ron");
+        data.push("data/aura_support.toml");
 
         let buf = std::fs::read_to_string(&data).unwrap();
 
-        let tmp = ron::from_str::<LedSupportFile>(&buf).unwrap();
+        let tmp = toml::from_str::<LedSupportFile>(&buf).unwrap();
 
         // Ensure the data is sorted
         let mut tmp_sort = tmp.clone();
-        tmp_sort.0.sort_by(|a, b| a.product_id.cmp(&b.product_id));
-        tmp_sort.0.sort_by(|a, b| a.device_name.cmp(&b.device_name));
-        for model in tmp_sort.0.iter_mut() {
+        tmp_sort
+            .device
+            .sort_by(|a, b| a.product_id.cmp(&b.product_id));
+        tmp_sort
+            .device
+            .sort_by(|a, b| a.device_name.cmp(&b.device_name));
+        for model in tmp_sort.device.iter_mut() {
             model.basic_modes.sort_by_key(|a| *a as u8);
         }
         if tmp != tmp_sort {
-            let sorted =
-                ron::ser::to_string_pretty(&tmp_sort, PrettyConfig::new().depth_limit(2)).unwrap();
+            let sorted = toml::to_string_pretty(&tmp_sort).unwrap();
             let mut file = OpenOptions::new()
                 .write(true)
                 .create(true)
@@ -253,30 +257,26 @@ mod tests {
                 .unwrap();
             file.write_all(sorted.as_bytes()).unwrap();
             panic!(
-                "aura_support.ron not sorted, should be {sorted}. File rewritten with correct \
+                "aura_support.toml not sorted, should be {sorted}. File rewritten with correct \
                  order, run test again"
             )
         }
 
-        let my_config = PrettyConfig::new().depth_limit(2);
-        println!(
-            "RON: {}",
-            ron::ser::to_string_pretty(&tmp, my_config).unwrap()
-        );
+        println!("TOML: {}", toml::to_string_pretty(&tmp).unwrap());
     }
 
     #[test]
     fn find_data_file_groups() {
         let mut data = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        data.push("data/aura_support.ron");
+        data.push("data/aura_support.toml");
 
         let buf = std::fs::read_to_string(&data).unwrap();
 
-        let tmp = ron::from_str::<LedSupportFile>(&buf).unwrap();
+        let tmp = toml::from_str::<LedSupportFile>(&buf).unwrap();
 
         let mut modes: HashMap<Vec<AuraModeNum>, Vec<String>> = HashMap::new();
 
-        for entry in tmp.0 {
+        for entry in tmp.device {
             if let Some(modes) = modes.get_mut(&entry.basic_modes) {
                 modes.push(entry.device_name);
             } else {
@@ -284,11 +284,5 @@ mod tests {
             }
         }
         dbg!(modes);
-
-        // let my_config = PrettyConfig::new().depth_limit(2);
-        // println!(
-        //     "RON: {}",
-        //     ron::ser::to_string_pretty(&tmp, my_config).unwrap()
-        // );
     }
 }
