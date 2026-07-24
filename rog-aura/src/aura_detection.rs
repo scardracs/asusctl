@@ -147,15 +147,19 @@ impl LedSupportFile {
             if file.is_empty() {
                 warn!("{} is empty", ASUS_LED_MODE_CONF);
             } else {
-                let mut tmp: LedSupportFile = ron::from_str(&file)
-                    .map_err(|e| error!("{e}"))
-                    .unwrap_or_else(|_| panic!("Could not deserialise {}", ASUS_LED_MODE_CONF));
-                data.0.append(&mut tmp.0);
-                loaded = true;
-                info!(
-                    "Loaded default LED support data from {}",
-                    ASUS_LED_MODE_CONF
-                );
+                match ron::from_str::<LedSupportFile>(&file) {
+                    Ok(mut tmp) => {
+                        data.0.append(&mut tmp.0);
+                        loaded = true;
+                        info!(
+                            "Loaded default LED support data from {}",
+                            ASUS_LED_MODE_CONF
+                        );
+                    }
+                    Err(e) => {
+                        error!("Could not deserialise {}: {}", ASUS_LED_MODE_CONF, e);
+                    }
+                }
             }
         }
         data.0.sort_by(|a, b| a.device_name.cmp(&b.device_name));
