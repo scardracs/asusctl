@@ -3,6 +3,7 @@ name: Build Arch Packages
 on:
     release:
         types: [published]
+    workflow_dispatch:
 
 permissions:
     contents: write
@@ -13,10 +14,10 @@ jobs:
         container:
             image: archlinux/archlinux:base-devel
         steps:
-            - name: Prepare container
+            - name: Prepare container & install dependencies
               run: |
                   pacman-key --init && pacman-key --populate archlinux
-                  pacman -Syu --noconfirm git sudo
+                  pacman -Syu --noconfirm git sudo rust llvm clang mold lld at-spi2-core cairo gtk3
 
             - uses: actions/checkout@v4
               with:
@@ -27,9 +28,8 @@ jobs:
                   useradd -m builder
                   echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
-            - name: Install makedepends
-              run: |
-                  pacman -Syu --noconfirm rust llvm clang mold at-spi2-core cairo gtk3
+            - name: Rust Cache
+              uses: Swatinem/rust-cache@v2
 
             - name: Determine pkgrel
               env:
@@ -38,7 +38,7 @@ jobs:
               run: |
                   git config --global --add safe.directory "$PWD"
                   PKGREL=1
-                  if [ -n "$BUCKET_PUBLIC_URL" ] && curl -sf "$BUCKET_PUBLIC_URL/ogc.db.tar.gz" -o /tmp/ogc.db.tar.gz; then
+                  if [ -n "$RELEASE_TAG" ] && [ -n "$BUCKET_PUBLIC_URL" ] && curl -sf "$BUCKET_PUBLIC_URL/ogc.db.tar.gz" -o /tmp/ogc.db.tar.gz; then
                       pkgver=$(git describe --long --tags "$RELEASE_TAG" | sed 's/\([^-]*-g\)/r\1/;s/-/./g')
                       LAST=0
                       for pkgname in asusctl rog-control-center; do
@@ -56,19 +56,32 @@ jobs:
             - name: Build packages
               run: |
                   git config --global --add safe.directory "$PWD"
-                  _gitref=$(git rev-list -n 1 "${{ github.event.release.tag_name }}")
+                  _gitref="${{ github.event.release.tag_name }}"
+                  [ -z "$_gitref" ] && _gitref=$(git rev-parse HEAD)
                   cp distro-packaging/PKGBUILD .
                   cp distro-packaging/asusctl.install .
                   chown -R builder:builder .
                   sudo -u builder \
+                      MAKEFLAGS="-j$(nproc)" \
+                      CARGO_BUILD_JOBS="$(nproc)" \
                       CI_BUILD=1 \
                       _gitref="$_gitref" \
                       pkgrel="$PKGREL" \
                       makepkg -s --noconfirm
 
             - name: Upload release assets
+              if: github.event_name == 'release'
               uses: softprops/action-gh-release@v3
               with:
                   files: |
                       *.pkg.tar.zst
                   fail_on_unmatched_files: true
+
+            - name: Upload build artifacts
+              if: github.event_name != 'release'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: arch-packages
+                  path: |
+                      *.pkg.tar.zst
+
