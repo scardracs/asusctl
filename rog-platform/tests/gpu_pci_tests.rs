@@ -245,11 +245,17 @@ fn gfx_power_serde_roundtrip() {
         GfxPower::AsusMuxDiscreet,
         GfxPower::Unknown,
     ];
+    #[derive(serde::Serialize, serde::Deserialize, PartialEq, Debug)]
+    struct Wrapper {
+        val: GfxPower,
+    }
+
     for variant in variants {
-        let json = serde_json::to_string(&variant).expect("serialize");
-        let deserialized: GfxPower = serde_json::from_str(&json).expect("deserialize");
+        let wrapper = Wrapper { val: variant };
+        let serialized = toml::to_string(&wrapper).expect("serialize");
+        let deserialized: Wrapper = toml::from_str(&serialized).expect("deserialize");
         assert_eq!(
-            deserialized, variant,
+            deserialized, wrapper,
             "serde roundtrip failed for {variant:?}"
         );
     }
@@ -268,11 +274,18 @@ fn gfx_vendor_serde_roundtrip() {
         GfxVendor::Unknown,
         GfxVendor::AsusDgpuDisabled,
     ];
+
+    #[derive(serde::Serialize, serde::Deserialize, PartialEq, Debug)]
+    struct Wrapper {
+        val: GfxVendor,
+    }
+
     for variant in variants {
-        let json = serde_json::to_string(&variant).expect("serialize");
-        let deserialized: GfxVendor = serde_json::from_str(&json).expect("deserialize");
+        let wrapper = Wrapper { val: variant };
+        let serialized = toml::to_string(&wrapper).expect("serialize");
+        let deserialized: Wrapper = toml::from_str(&serialized).expect("deserialize");
         assert_eq!(
-            deserialized, variant,
+            deserialized, wrapper,
             "serde roundtrip failed for {variant:?}"
         );
     }
