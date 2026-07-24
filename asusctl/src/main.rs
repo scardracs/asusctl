@@ -23,7 +23,6 @@ use rog_dbus::zbus_platform::PlatformProxyBlocking;
 use rog_platform::platform::{PlatformProfile, Properties};
 use rog_profiles::error::ProfileError;
 use rog_scsi::AuraMode;
-use ron::ser::PrettyConfig;
 use scsi_cli::ScsiCommand;
 use zbus::blocking::proxy::ProxyImpl;
 use zbus::blocking::Connection;
@@ -862,8 +861,8 @@ fn handle_fan_curve(
     if let Some(profile) = cmd.mod_profile {
         if cmd.enable_fan_curves.is_none() && cmd.data.is_none() {
             let data = fan_proxy.fan_curve_data(profile)?;
-            let ron = ron::ser::to_string_pretty(&data, PrettyConfig::new().depth_limit(4))?;
-            println!("\nFan curves for {:?}\n\n{}", profile, ron);
+            let toml_str = toml::to_string_pretty(&data)?;
+            println!("\nFan curves for {:?}\n\n{}", profile, toml_str);
         }
 
         if let Some(enabled) = cmd.enable_fan_curves {
