@@ -115,14 +115,14 @@ install -D -m 0644 data/asusd.rules %{buildroot}%{_udevrulesdir}/99-asusd.rules
 install -D -m 0644 data/asusd.conf %{buildroot}%{_datadir}/dbus-1/system.d/asusd.conf
 
 # Install asusd data
-install -D -m 0644 rog-aura/data/aura_support.ron %{buildroot}%{_datadir}/asusd/aura_support.ron
+install -D -m 0644 rog-aura/data/aura_support.toml %{buildroot}%{_datadir}/asusd/aura_support.toml
 cp -r rog-anime/data/anime %{buildroot}%{_datadir}/asusd/
 
 # Install rog-gui data
 install -D -m 0644 rog-control-center/data/org.opengamingcollective.rog-control-center.desktop %{buildroot}%{_datadir}/applications/org.opengamingcollective.rog-control-center.desktop
 install -D -m 0644 rog-control-center/data/rog-control-center.png %{buildroot}%{_datadir}/icons/hicolor/512x512/apps/rog-control-center.png
-mkdir -p %{buildroot}%{_datadir}/rog-gui/layouts
-cp -r rog-aura/data/layouts/*.ron %{buildroot}%{_datadir}/rog-gui/layouts/
+install -d -m 0755 %{buildroot}%{_datadir}/rog-gui/layouts/
+cp -r rog-aura/data/layouts/*.toml %{buildroot}%{_datadir}/rog-gui/layouts/
 
 # Install icons
 install -D -m 0644 data/icons/asus_notif_yellow.png %{buildroot}%{_datadir}/icons/hicolor/512x512/apps/asus_notif_yellow.png

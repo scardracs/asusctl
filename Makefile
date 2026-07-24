@@ -17,7 +17,7 @@ BIN_C := asusctl
 BIN_D := asusd
 BIN_S := asus-shutdown
 BIN_U := asusd-user
-LEDCFG := aura_support.ron
+LEDCFG := aura_support.toml
 
 DESTDIR_REALPATH := $(if $(DESTDIR),$(shell realpath $(DESTDIR)),)
 
@@ -100,7 +100,7 @@ install-data-rog_gui:
 	$(INSTALL_DATA) "./rog-control-center/data/$(APP_ID).desktop" "$(DESTDIR)$(datarootdir)/applications/$(APP_ID).desktop"
 	$(INSTALL_DATA) "./rog-control-center/data/$(BIN_ROG).png" "$(DESTDIR)$(datarootdir)/icons/hicolor/512x512/apps/$(BIN_ROG).png"
 	$(INSTALL_DATA) "./rog-control-center/data/$(APP_ID).metainfo.xml" "$(DESTDIR)$(datarootdir)/metainfo/$(APP_ID).metainfo.xml"
-	cd rog-aura/data/layouts && find . -type f -name "*.ron" -exec $(INSTALL_DATA) "{}" "$(DESTDIR_REALPATH)$(datarootdir)/rog-gui/layouts/{}" \;
+	cd rog-aura/data/layouts && find . -type f -name "*.toml" -exec $(INSTALL_DATA) "{}" "$(DESTDIR_REALPATH)$(datarootdir)/rog-gui/layouts/{}" \;
 
 	$(INSTALL_DATA) "./data/icons/asus_notif_yellow.png" "$(DESTDIR)$(datarootdir)/icons/hicolor/512x512/apps/asus_notif_yellow.png"
 	$(INSTALL_DATA) "./data/icons/asus_notif_green.png" "$(DESTDIR)$(datarootdir)/icons/hicolor/512x512/apps/asus_notif_green.png"
