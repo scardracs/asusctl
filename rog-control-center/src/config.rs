@@ -193,10 +193,10 @@ mod tests {
 
     #[test]
     fn test_config_without_global_shortcut_field_defaults_to_false() {
-        let serialized = config_traits::ron::to_string(&Config::default()).unwrap();
-        let without_field = serialized.replace("enable_global_shortcut:false,", "");
+        let serialized = config_traits::toml::to_string(&Config::default()).unwrap();
+        let without_field = serialized.replace("enable_global_shortcut = false\n", "");
         assert!(without_field.len() < serialized.len());
-        let parsed: Config = config_traits::ron::from_str(&without_field).unwrap();
+        let parsed: Config = config_traits::toml::from_str(&without_field).unwrap();
         assert!(!parsed.enable_global_shortcut);
     }
 

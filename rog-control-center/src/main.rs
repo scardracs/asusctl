@@ -321,7 +321,7 @@ fn do_cli_help(parsed: &CliStart) -> bool {
 
 pub fn get_layout_path(path: &Path, layout_name: &str) -> PathBuf {
     let mut data_path = PathBuf::from(path);
-    let layout_file = format!("{}_US.ron", layout_name);
+    let layout_file = format!("{}_US.toml", layout_name);
     data_path.push("layouts");
     data_path.push(layout_file);
     data_path
