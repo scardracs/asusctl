@@ -196,29 +196,6 @@ impl DeviceManager {
                         });
                     }
                 }
-                // ANIME MATRIX DEVICE
-                if let Ok(dev_type) =
-                    DeviceHandle::maybe_anime_hid(dev.clone(), usb_id.to_str().unwrap_or_default())
-                        .await
-                    && let DeviceHandle::AniMe(anime) = dev_type.clone()
-                {
-                    let path = dbus_path_for_dev(&usb_device).unwrap_or(dbus_path_for_anime());
-                    let ctrl = AniMeZbus::new(anime);
-                    if ctrl
-                        .start_tasks(connection, path.clone())
-                        .await
-                        .map_err(|e| {
-                            error!("Failed to start AniMe tasks: {e:?}, not adding this device")
-                        })
-                        .is_ok()
-                    {
-                        devices.push(AsusDevice {
-                            device: dev_type,
-                            dbus_path: path,
-                            hid_key: Some(hid_key.clone()),
-                        });
-                    }
-                }
                 // AURA LAPTOP DEVICE
                 if let Ok(dev_type) =
                     DeviceHandle::maybe_laptop_aura(Some(dev), usb_id.to_str().unwrap_or_default())
@@ -450,7 +427,7 @@ impl DeviceManager {
             if matches!(dev.device, DeviceHandle::AniMe(_)) {
                 do_anime = false;
             }
-            if matches!(dev.device, DeviceHandle::Aura(_) | DeviceHandle::OldAura(_)) {
+            if matches!(dev.device, DeviceHandle::Aura(_)) {
                 do_kb_backlight = false;
             }
         }
