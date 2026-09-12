@@ -13,11 +13,34 @@ Dynamic Lighting always wins, and hidraw is not used to retry an effect rejected
 by the kernel. This preserves operation on released kernels while avoiding two
 owners sending commands to the same controller.
 
-The ASUS-only `aura_mode` attribute selects unified or split kernel topology; it
-is not part of the generic Dynamic Lighting ABI. The current D-Bus API describes
-historical keyboard and left/right lightbar subzones that the kernel topology
-cannot represent accurately, so asusd does not advertise those zones through a
-Dynamic Lighting controller. Whole-device requests use the unified node.
+## Topology (`aura_mode`)
+
+The ASUS-only `aura_mode` attribute selects kernel topology; it is not part of
+the generic Dynamic Lighting ABI.
+
+| Mode | Writable nodes | Notes |
+|------|----------------|-------|
+| `auto` | same as `split` | Kernel default resolution |
+| `split` | `aura:keyboard`, `aura:lightbar` | Independent colours; `aura:global` returns `-EBUSY` |
+| `unified` | `aura:global` | Single effect for all zones; split nodes return `-EBUSY` |
+
+When a chassis lightbar is present, asusd sets `split` during initialization so
+keyboard and lightbar are independently controllable. Callers that want one
+shared effect should set `unified` explicitly.
+
+Kernel direct RGB may use HID LampArray (Usage Page `0x59`) when Aura `0xBC`
+cannot drive the lightbar independently; firmware animations stay on Aura
+`0xb3`. That backend choice is invisible to the sysfs ABI.
+
+## D-Bus zones
+
+The D-Bus API still describes historical keyboard and left/right lightbar
+subzones. Under Dynamic Lighting those are not advertised
+(`supported_basic_zones` is empty). Incoming legacy zone values are accepted
+only as aliases: Key1–4 map to the keyboard node, BarLeft/BarRight to the
+lightbar, and `None` fans out under split or uses `aura:global` under unified.
+
+## Other devices
 
 ROG NVMe enclosure lighting requires the kernel ASUS Aura SCSI Dynamic Lighting
 driver. asusd matches an enclosure's block-device ancestry to its exact LED

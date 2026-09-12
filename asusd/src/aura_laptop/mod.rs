@@ -55,6 +55,12 @@ impl Aura {
 
     /// Initialise the device if required.
     pub async fn do_initialization(&self) -> Result<(), RogError> {
+        // With a chassis lightbar, prefer split so keyboard and lightbar are
+        // independently writable (matches kernel auto→split). Unified remains
+        // available when userspace wants a single global effect.
+        if self.dynamic_lightbar.is_some() {
+            self.set_asus_topology("split").await?;
+        }
         Ok(())
     }
 
@@ -200,18 +206,17 @@ impl Aura {
                     }
                 }
                 rog_aura::AuraZone::None => {
-                    // Prefer unified/global when that node is active; otherwise
-                    // fall through to keyboard+lightbar (split topology).
-                    if let Some(global) = &self.dynamic_global {
-                        {
-                            let global_led = global.lock().await;
-                            if global_led.has_asus_aura_mode()
-                                && global_led.get_asus_aura_mode().ok().as_deref() == Some("auto")
-                            {
-                                drop(global_led);
-                                self.set_asus_topology("unified").await?;
-                            }
-                        }
+                    // Whole-device: only unified topology uses aura:global.
+                    // Otherwise (split / auto→split) fan out to keyboard and
+                    // lightbar so both zones get the same effect.
+                    let unified = if let Some(global) = &self.dynamic_global {
+                        let led = global.lock().await;
+                        led.has_asus_aura_mode()
+                            && led.get_asus_aura_mode().ok().as_deref() == Some("unified")
+                    } else {
+                        false
+                    };
+                    if unified && let Some(global) = &self.dynamic_global {
                         let global_led = global.lock().await;
                         if apply_to_led(&global_led)? {
                             return Ok(());
@@ -286,17 +291,37 @@ impl Aura {
     /// Dynamic Lighting nodes may advertise `max_brightness > 3`; those values
     /// are scaled back to Off/Low/Med/High.
     pub async fn get_brightness(&self) -> Result<LedBrightness, RogError> {
-        if let Some(dynamic_global) = &self.dynamic_global {
-            let led = dynamic_global.lock().await;
-            let max = led.get_max_brightness()?;
-            let value = led.get_brightness()?;
-            return Ok(LedBrightness::from_scaled(value, max));
-        }
-        if let Some(dynamic_kbd) = &self.dynamic_kbd {
-            let led = dynamic_kbd.lock().await;
-            let max = led.get_max_brightness()?;
-            let value = led.get_brightness()?;
-            return Ok(LedBrightness::from_scaled(value, max));
+        // Prefer nodes that are writable under the current topology: keyboard
+        // and lightbar under split, global under unified. Skip -EBUSY.
+        for slot in [
+            &self.dynamic_kbd,
+            &self.dynamic_lightbar,
+            &self.dynamic_global,
+        ]
+        .into_iter()
+        .flatten()
+        {
+            let led = slot.lock().await;
+            let max = match led.get_max_brightness() {
+                Ok(m) => m,
+                Err(e) => {
+                    let err = RogError::from(e);
+                    if is_dl_node_inactive(&err) {
+                        continue;
+                    }
+                    return Err(err);
+                }
+            };
+            match led.get_brightness() {
+                Ok(value) => return Ok(LedBrightness::from_scaled(value, max)),
+                Err(e) => {
+                    let err = RogError::from(e);
+                    if is_dl_node_inactive(&err) {
+                        continue;
+                    }
+                    return Err(err);
+                }
+            }
         }
         if let Some(backlight) = &self.backlight {
             let value = backlight.lock().await.get_brightness()?;
