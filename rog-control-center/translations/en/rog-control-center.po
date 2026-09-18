@@ -574,8 +574,12 @@ msgctxt "PageSystem"
 msgid "dGPU Status"
 msgstr ""
 
-#: rog-control-center/ui/pages/system.slint:373
-#: rog-control-center/ui/pages/system.slint:386
+#: rog-control-center/ui/pages/system.slint:183
+msgctxt "PageSystem"
+msgid "Disabled"
+msgstr ""
+
+#: rog-control-center/ui/pages/system.slint:183
 msgctxt "PageSystem"
 msgid "Suspended"
 msgstr ""

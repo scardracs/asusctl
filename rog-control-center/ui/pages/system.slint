@@ -174,11 +174,13 @@ export global SystemPageData {
     in-out property <float> igpu_usage_val: -1.0;
     in-out property <bool> has_igpu: false;
     in-out property <bool> dgpu_suspended: false;
+    in-out property <bool> dgpu_disabled: false;
 }
 
 export component PageSystem inherits Rectangle {
     property <bool> show_fade_cover: false;
     property <bool> show_throttle_advanced: false;
+    property <string> dgpu_power_label: SystemPageData.dgpu_disabled ? @tr("Disabled") : (SystemPageData.dgpu_suspended ? @tr("Suspended") : "");
     // Resolve the active platform profile enum value (Balanced=0, Performance=1,
     // Quiet=2, LowPower=3, Custom=4) from the dropdown index, guarding against
     // an unresolved -1 index during initial setup.
@@ -370,9 +372,9 @@ export component PageSystem inherits Rectangle {
                                     color: Palette.control-foreground;
                                 }
                                 Text {
-                                    text: SystemPageData.dgpu_suspended ? @tr("Suspended") : (SystemPageData.gpu_temp_val >= 0.0 ? (Math.round(SystemPageData.gpu_temp_val) + " °C") : @tr("N/A"));
+                                    text: root.dgpu_power_label != "" ? root.dgpu_power_label : (SystemPageData.gpu_temp_val >= 0.0 ? (Math.round(SystemPageData.gpu_temp_val) + " °C") : @tr("N/A"));
                                     font-weight: 700;
-                                    color: SystemPageData.dgpu_suspended ? Palette.control-foreground : (SystemPageData.gpu_temp_val > 80 ? #ef4444 : (SystemPageData.gpu_temp_val > 65 ? #eab308 : (SystemPageData.gpu_temp_val >= 0.0 ? #22c55e : Palette.control-foreground)));
+                                    color: root.dgpu_power_label != "" ? Palette.control-foreground : (SystemPageData.gpu_temp_val > 80 ? #ef4444 : (SystemPageData.gpu_temp_val > 65 ? #eab308 : (SystemPageData.gpu_temp_val >= 0.0 ? #22c55e : Palette.control-foreground)));
                                 }
                             }
                             
@@ -383,7 +385,7 @@ export component PageSystem inherits Rectangle {
                                     color: Palette.control-foreground;
                                 }
                                 Text {
-                                    text: SystemPageData.dgpu_suspended ? @tr("Suspended") : (SystemPageData.gpu_usage_val >= 0.0 ? (Math.round(SystemPageData.gpu_usage_val) + "%") : @tr("N/A"));
+                                    text: root.dgpu_power_label != "" ? root.dgpu_power_label : (SystemPageData.gpu_usage_val >= 0.0 ? (Math.round(SystemPageData.gpu_usage_val) + "%") : @tr("N/A"));
                                     font-weight: 700;
                                     color: Palette.control-foreground;
                                 }

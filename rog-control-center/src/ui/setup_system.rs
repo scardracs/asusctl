@@ -147,6 +147,7 @@ pub fn setup_system_page(
             let gpu_temp = gpu_telemetry.dgpu_temp;
             let igpu_temp = gpu_telemetry.igpu_temp;
             let dgpu_suspended = gpu_telemetry.dgpu_suspended;
+            let dgpu_disabled = gpu_telemetry.dgpu_disabled;
             let (cpu_fan, gpu_fan, mid_fan) = rog_platform::platform::get_fan_rpms();
             let cpu_freq = rog_platform::cpu::get_cpu_frequency_mhz();
             let ram_usage = rog_platform::cpu::get_ram_usage_pct();
@@ -181,6 +182,7 @@ pub fn setup_system_page(
                 data.set_gpu_temp_val(gpu_temp);
                 data.set_igpu_temp_val(igpu_temp);
                 data.set_dgpu_suspended(dgpu_suspended);
+                data.set_dgpu_disabled(dgpu_disabled);
                 data.set_cpu_usage_val(cpu_usage);
                 data.set_gpu_usage_val(gpu_usage);
                 data.set_igpu_usage_val(igpu_usage);
