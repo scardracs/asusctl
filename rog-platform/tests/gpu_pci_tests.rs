@@ -1,11 +1,11 @@
 //! Tests for the GPU PCI detection and power status module.
 //!
 //! These tests cover the pure/deterministic parts of `rog_platform::gpu_pci`:
-//! enum conversions, label matching, and default values. Hardware-dependent
+//! enum conversions, GPU classification, and default values. Hardware-dependent
 //! functions (`Device::find`, `get_gpu_power_status`) are tested via integration
 //! tests on machines with actual GPUs.
 
-use rog_platform::gpu_pci::{GfxPower, GpuTelemetry, lspci_dgpu_check};
+use rog_platform::gpu_pci::{GfxPower, GpuTelemetry, is_discrete_gpu};
 use std::str::FromStr;
 
 // ---------------------------------------------------------------------------
@@ -21,6 +21,7 @@ fn gpu_telemetry_default_values() {
     assert_eq!(telemetry.dgpu_usage, -1.0);
     assert_eq!(telemetry.dgpu_freq_mhz, -1.0);
     assert!(!telemetry.dgpu_suspended);
+    assert!(!telemetry.dgpu_disabled);
 }
 
 // ---------------------------------------------------------------------------
@@ -42,6 +43,10 @@ fn gfx_power_from_str_active_case_insensitive() {
 fn gfx_power_from_str_suspended() {
     assert_eq!(
         GfxPower::from_str("suspended").unwrap(),
+        GfxPower::Suspended
+    );
+    assert_eq!(
+        GfxPower::from_str("suspending").unwrap(),
         GfxPower::Suspended
     );
 }
@@ -152,60 +157,39 @@ fn gfx_power_copy_clone() {
 }
 
 // ---------------------------------------------------------------------------
-// lspci_dgpu_check – positive matches
+// is_discrete_gpu – PCI topology, independent of NVIDIA driver flavour
 // ---------------------------------------------------------------------------
 
 #[test]
-fn lspci_dgpu_check_radeon_rx() {
-    assert!(lspci_dgpu_check("Radeon RX 6800M"));
+fn discrete_gpu_nvidia_always() {
+    assert!(is_discrete_gpu("10DE:2520", None, 1));
+    assert!(is_discrete_gpu("10DE:2820", Some(true), 1));
 }
 
 #[test]
-fn lspci_dgpu_check_amd_ati() {
-    assert!(lspci_dgpu_check("AMD/ATI Navi 22"));
+fn discrete_gpu_hybrid_amd_nvidia() {
+    // GA503R-style: Radeon 680M + RTX 3080
+    assert!(!is_discrete_gpu("1002:1681", Some(true), 1));
+    assert!(is_discrete_gpu("10DE:24DC", Some(false), 1));
 }
 
 #[test]
-fn lspci_dgpu_check_geforce() {
-    assert!(lspci_dgpu_check("GeForce RTX 3080"));
+fn discrete_gpu_mux_amd_still_igpu() {
+    // MUX discreet: NVIDIA is boot VGA; the single AMD APU stays the iGPU
+    assert!(!is_discrete_gpu("1002:1681", Some(false), 1));
+    assert!(is_discrete_gpu("10DE:24DC", Some(true), 1));
 }
 
 #[test]
-fn lspci_dgpu_check_geforce_lowercase_f() {
-    assert!(lspci_dgpu_check("Geforce GTX 1660"));
+fn discrete_gpu_dual_amd() {
+    assert!(!is_discrete_gpu("1002:1681", Some(true), 2));
+    assert!(is_discrete_gpu("1002:73DF", Some(false), 2));
 }
 
 #[test]
-fn lspci_dgpu_check_quadro() {
-    assert!(lspci_dgpu_check("Quadro T1000"));
-}
-
-#[test]
-fn lspci_dgpu_check_t1200() {
-    assert!(lspci_dgpu_check("T1200"));
-}
-
-// ---------------------------------------------------------------------------
-// lspci_dgpu_check – negative matches
-// ---------------------------------------------------------------------------
-
-#[test]
-fn lspci_dgpu_check_intel_igpu() {
-    assert!(!lspci_dgpu_check("Intel Corporation UHD Graphics 630"));
-}
-
-#[test]
-fn lspci_dgpu_check_empty_string() {
-    assert!(!lspci_dgpu_check(""));
-}
-
-#[test]
-fn lspci_dgpu_check_unrelated_device() {
-    assert!(!lspci_dgpu_check("Realtek RTL8111/8168/8411"));
-}
-
-#[test]
-fn lspci_dgpu_check_partial_match_not_enough() {
-    // "Radeon" alone should not match (the pattern requires "Radeon RX" or "AMD/ATI")
-    assert!(!lspci_dgpu_check("Radeon Pro W6600"));
+fn discrete_gpu_intel_plus_nvidia() {
+    // One Intel iGPU at most, never discrete.
+    assert!(!is_discrete_gpu("8086:A7A0", Some(true), 0));
+    assert!(!is_discrete_gpu("8086:A7A0", Some(false), 0));
+    assert!(is_discrete_gpu("10DE:28E0", Some(false), 0));
 }
